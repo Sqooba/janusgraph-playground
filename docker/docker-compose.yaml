@@ -1,0 +1,97 @@
+version: "3"
+
+services:
+
+  janusgraph:
+    image: docker.sqooba.io/janusgraph:0.5.3
+    build:
+      context: ./janusgraph
+    container_name: janusgraph
+    environment:
+      # Janusgraph settings:
+      - JANUS_PROPS_TEMPLATE=cql-es
+      - janusgraph.storage.hostname=cassandra
+      - janusgraph.index.search.hostname=elasticsearch
+      - janusgraph.index.search.elasticsearch.client-only=true
+      # For a single node elasticsearch:
+      - janusgraph.index.search.elasticsearch.create.ext.number_of_shards=1
+      - janusgraph.index.search.elasticsearch.create.ext.number_of_replicas=0
+      # Gremlin server settings:
+      - gremlinserver.graphManager=org.janusgraph.graphdb.management.JanusGraphManager
+      - gremlinserver.channelizer=org.janusgraph.channelizers.JanusGraphWsAndHttpChannelizer
+      - gremlinserver.metrics.csvReporter.enabled=false
+      - gremlinserver.metrics.consoleReporter.enabled=false
+      - gremlinserver.metrics.slf4jReporter.enabled=false
+      # - gremlinserver.graphs.ConfigurationManagementGraph=<TODO>
+    ports:
+      - 8182:8182
+    volumes: # Only used with non-distributed storage backends.
+      - ./data/janusgraph:/var/lib/janusgraph
+    networks:
+      - jce-network
+    depends_on:
+      - cassandra
+      - elasticsearch
+    healthcheck:
+      test: "bin/gremlin.sh -e scripts/remote-connect.groovy"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  cassandra:
+    image: cassandra:3
+    container_name: cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: cass-docker-cluster
+    ports:
+      - 9042:9042 # CQL
+      - 9160:9160 # Thrift
+    volumes:
+      - ./data/cass:/var/lib/cassandra
+    networks:
+      - jce-network
+    healthcheck:
+      test: "[ $$(nodetool statusgossip) = 'running' ]"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: elasticsearch
+    environment:
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.monitoring.collection.enabled=true
+      - xpack.security.enabled=false
+    ports:
+      - 9200:9200
+    volumes:
+      - ./data/es:/usr/share/elasticsearch/data
+    networks:
+      - jce-network
+    healthcheck:
+      test: "curl -f http://localhost:9200/_cluster/health?wait_for_status=yellow"
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+    ports:
+      - 5601:5601
+    volumes:
+      - ./data/kibana:/usr/share/kibana/data
+    networks:
+      - jce-network
+    depends_on:
+      - elasticsearch
+
+networks:
+  jce-network:
