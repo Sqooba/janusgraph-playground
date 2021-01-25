@@ -93,5 +93,15 @@ services:
     depends_on:
       - elasticsearch
 
+  graphexp:
+    image: aleopold/docker-graphexp
+    container_name: graphexp
+    ports:
+      - 80:80
+    networks:
+      - jce-network
+    depends_on:
+      - janusgraph
+
 networks:
   jce-network:
