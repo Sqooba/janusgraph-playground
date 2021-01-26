@@ -3,9 +3,7 @@ version: "3"
 services:
 
   janusgraph:
-    image: docker.sqooba.io/janusgraph:0.5.3
-    build:
-      context: ./janusgraph
+    image: janusgraph/janusgraph:0.5.3
     container_name: janusgraph
     environment:
       # Janusgraph settings:
@@ -27,6 +25,7 @@ services:
       - 8182:8182
     volumes: # Only used with non-distributed storage backends.
       - ./data/janusgraph:/var/lib/janusgraph
+      - ./janusgraph/connect.groovy:${JANUS_HOME}/scripts/connect.groovy:ro
     networks:
       - jce-network
     depends_on:
