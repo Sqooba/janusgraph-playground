@@ -101,6 +101,29 @@ services:
       - jce-network
     depends_on:
       - janusgraph
+      
+  invana-engine:
+    image: invanalabs/invana-engine
+    container_name: invana-engine
+    environment:
+      - GREMLIN_SERVER_URL=ws://janusgraph:8182/gremlin
+    ports:
+      - 8000:8000
+    networks:
+      - jce-network
+    depends_on:
+      - janusgraph
+  
+  graph-explorer:
+    image: invanalabs/graph-explorer
+    container_name: graph-explorer
+    ports:
+      - 8888:8888
+    networks:
+      - jce-network
+    depends_on:
+      - janusgraph
+      - invana-engine
 
 networks:
   jce-network:
