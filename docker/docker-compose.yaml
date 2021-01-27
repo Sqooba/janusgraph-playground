@@ -125,5 +125,17 @@ services:
       - janusgraph
       - invana-engine
 
+  graph-notebook:
+    image: sqooba/graph-notebook
+    container_name: graph-notebook
+    build:
+      context: ./graph-notebook
+    ports:
+      - 8080:8888
+    volumes:
+      - ./jupyter-notebooks:/home/sqooba/03-Sqooba
+    networks:
+      - jce-network
+
 networks:
   jce-network:
