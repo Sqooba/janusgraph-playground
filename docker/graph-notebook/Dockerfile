@@ -6,7 +6,8 @@ LABEL maintainer="Lionel Fleury <lionel@sqooba.io>"
 RUN \
   pip install tornado==4.5.3 && \
   pip install notebook==5.7.10 && \
-  pip install graph-notebook
+  pip install graph-notebook && \
+  pip install pandas
   
 # install and enable the visualization widget
 RUN jupyter nbextension install --py --sys-prefix graph_notebook.widgets
