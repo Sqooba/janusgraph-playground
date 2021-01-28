@@ -137,7 +137,7 @@ services:
     networks:
       - jce-network
     healthcheck:
-      test: "wget -t 1 -qO- http://localhost:8888 &> /dev/null"
+      test: "wget -t 1 -qO- http://localhost:8888/tree &> /dev/null"
       interval: 30s
       timeout: 30s
       retries: 3
