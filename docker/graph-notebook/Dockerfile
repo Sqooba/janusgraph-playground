@@ -7,6 +7,7 @@ RUN \
   pip install tornado==4.5.3 && \
   pip install notebook==5.7.10 && \
   pip install graph-notebook && \
+  pip install tqdm && \
   pip install pandas
   
 # install and enable the visualization widget
